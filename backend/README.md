@@ -3,10 +3,10 @@
 Backend service for the Doctor Appointment Booking System.
 
 ## Features
-- **Book Appointments**: Schedule new appointments.
-- **Cancel Appointments**: Cancel existing appointments.
-- **Reschedule Appointments**: Change the time of an appointment.
-- **Concurrency Control**: Prevents double-booking using MongoDB unique indexes.
+- **Authentication**: JWT-based auth (Register, Login, Get Me).
+- **Doctor Management**: Create/Update profiles, list doctors.
+- **Appointment Management**: Book, cancel, and reschedule appointments.
+- **Concurrency Control**: Prevents double-booking.
 
 ## Prerequisites
 - Node.js (v14+)
@@ -20,10 +20,13 @@ Backend service for the Doctor Appointment Booking System.
    ```
 
 2. **Environment Variables**
-   Create a `.env` file in the root directory:
+   Create a `.env` file:
    ```env
    MONGO_URI=mongodb://localhost:27017/clinic
    PORT=5000
+   JWT_SECRET=your_secret
+   JWT_EXPIRE=30d
+   JWT_COOKIE_EXPIRE=30
    ```
 
 3. **Start Server**
@@ -33,9 +36,79 @@ Backend service for the Doctor Appointment Booking System.
 
 ## API Endpoints
 
-### 1. Book Appointment
+### Authentication
+
+#### 1. Register User
+- **URL**: `/api/auth/register`
+- **Method**: `POST`
+- **Payload**:
+  ```json
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "role": "patient" // or "doctor"
+  }
+  ```
+
+#### 2. Login User
+- **URL**: `/api/auth/login`
+- **Method**: `POST`
+- **Payload**:
+  ```json
+  {
+    "email": "john@example.com",
+    "password": "password123"
+  }
+  ```
+
+#### 3. Get Current User
+- **URL**: `/api/auth/me`
+- **Method**: `GET`
+- **Headers**: `Authorization: Bearer <token>`
+
+---
+
+### Doctors
+
+#### 1. Create/Update Profile (Doctor Only)
+- **URL**: `/api/doctors`
+- **Method**: `POST`
+- **Headers**: `Authorization: Bearer <token>`
+- **Payload**:
+  ```json
+  {
+    "specialization": "Cardiology",
+    "experience": 10,
+    "qualifications": ["MBBS", "MD"],
+    "bio": "Expert Cardiologist",
+    "fees": 500,
+    "availableSlots": [
+      {
+        "day": "Monday",
+        "startTime": "09:00",
+        "endTime": "17:00"
+      }
+    ]
+  }
+  ```
+
+#### 2. Get All Doctors
+- **URL**: `/api/doctors`
+- **Method**: `GET`
+
+#### 3. Get Doctor by ID
+- **URL**: `/api/doctors/:id`
+- **Method**: `GET`
+
+---
+
+### Appointments
+
+#### 1. Book Appointment
 - **URL**: `/api/appointments`
 - **Method**: `POST`
+- **Headers**: `Authorization: Bearer <token>`
 - **Payload**:
   ```json
   {
@@ -45,14 +118,15 @@ Backend service for the Doctor Appointment Booking System.
   }
   ```
 
-### 2. Cancel Appointment
+#### 2. Cancel Appointment
 - **URL**: `/api/appointments/:id/cancel`
 - **Method**: `PUT`
-- **Payload**: None
+- **Headers**: `Authorization: Bearer <token>`
 
-### 3. Reschedule Appointment
+#### 3. Reschedule Appointment
 - **URL**: `/api/appointments/:id/reschedule`
 - **Method**: `PUT`
+- **Headers**: `Authorization: Bearer <token>`
 - **Payload**:
   ```json
   {
@@ -63,4 +137,4 @@ Backend service for the Doctor Appointment Booking System.
 
 ## Testing
 
-A Postman collection is included: `doctor_appointment_postman_collection.json`. Import it into Postman to test the API.
+Import `doctor_appointment_postman_collection.json` into Postman to test all APIs.
